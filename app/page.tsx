@@ -1,31 +1,24 @@
 import { supabase } from '../lib/supabase'
 import HeroSection from '../components/HeroSection'
 import ContactButton from '../components/ContactButton'
+import ContactModal from '../components/ContactModal'
 
-// Force dynamic rendering to always fetch fresh data
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
 
 export default async function Home() {
-  // Fetch active listings
-  const { data: listings, error } = await supabase
+  const { data: listings } = await supabase
     .from('listings')
     .select('*')
     .eq('status', 'active')
     .order('created_at', { ascending: false })
 
-  // Fetch notifications
   const { data: notifications } = await supabase
     .from('notifications')
     .select('*')
     .eq('status', 'active')
     .order('created_at', { ascending: false })
     .limit(5)
-
-  // Debug: Log if no listings
-  if (!listings || listings.length === 0) {
-    console.log('No active listings found in Supabase')
-  }
 
   const categories = [
     'Graphic Design', 'Web Development', 'Plumbing', 'Photography',
@@ -67,7 +60,7 @@ export default async function Home() {
         </div>
       )}
 
-      {/* Hero Section with Search - Client Component */}
+      {/* Hero Section */}
       <HeroSection categories={categories} />
 
       {/* Listings */}
@@ -91,17 +84,49 @@ export default async function Home() {
                   </div>
                   <div className="mt-3 pt-3 border-t">
                     <p className="font-semibold text-gray-800 mb-2">{listing.price_range || 'Price on request'}</p>
-                    <ContactButton listingName={listing.business_name || listing.full_name} phone={listing.phone} />
+                    <ContactButton listingId={listing.id} listingName={listing.business_name || listing.full_name} />
+                  </div>
+                </div>
+
+                {/* Modal */}
+                <div
+                  id={`contact-modal-${listing.id}`}
+                  style={{ display: 'none' }}
+                  className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+                  onClick={(e) => {
+                    if (e.target === e.currentTarget) {
+                      const modal = document.getElementById(`contact-modal-${listing.id}`)
+                      if (modal) modal.style.display = 'none'
+                    }
+                  }}
+                >
+                  <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 max-h-[90vh] overflow-y-auto">
+                    <div className="flex justify-between items-center mb-4">
+                      <button
+                        onClick={() => {
+                          const modal = document.getElementById(`contact-modal-${listing.id}`)
+                          if (modal) modal.style.display = 'none'
+                        }}
+                        className="text-gray-500 hover:text-gray-700 text-2xl"
+                      >
+                        ×
+                      </button>
+                    </div>
+                    <ContactModal
+                      listingId={listing.id}
+                      listingName={listing.business_name || listing.full_name}
+                      onClose={() => {
+                        const modal = document.getElementById(`contact-modal-${listing.id}`)
+                        if (modal) modal.style.display = 'none'
+                      }}
+                    />
                   </div>
                 </div>
               </div>
             ))}
           </div>
         ) : (
-          <div className="text-center py-12">
-            <p className="text-gray-500">No freelancers listed yet. Check back soon!</p>
-            <p className="text-sm text-gray-400 mt-2">If you're a freelancer, register and get approved by admin.</p>
-          </div>
+          <p className="text-gray-500 text-center py-12">No freelancers listed yet. Check back soon!</p>
         )}
       </section>
 
@@ -112,9 +137,6 @@ export default async function Home() {
           <p className="text-sm text-gray-400 mt-2">© 2025 All Rights Reserved</p>
           <p className="text-sm text-gray-400 mt-2">
             Contact: 0748702891 | hardinhiggins60@gmail.com
-          </p>
-          <p className="text-xs text-gray-500 mt-4">
-            Freelancers pay 500 KES registration fee. Listing active for 4 months. 8% commission on jobs.
           </p>
         </div>
       </footer>
