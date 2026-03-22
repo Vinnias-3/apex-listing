@@ -1,7 +1,6 @@
 import { supabase } from '../lib/supabase'
 import HeroSection from '../components/HeroSection'
-import ContactButton from '../components/ContactButton'
-import ContactModal from '../components/ContactModal'
+import FreelancerCard from '../components/FreelancerCard'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -76,65 +75,7 @@ export default async function Home() {
         ) : listings && listings.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {listings.map((listing) => (
-              <div
-                key={listing.id}
-                className="freelancer-card bg-white rounded-lg shadow hover:shadow-lg transition-all duration-300"
-                data-category={listing.category}
-              >
-                <div className="p-5">
-                  <h3 className="text-xl font-bold mb-1">{listing.business_name || listing.full_name}</h3>
-                  <p className="text-blue-600 text-sm mb-2">{listing.category}</p>
-                  <p className="text-gray-600 text-sm mb-3 line-clamp-3">{listing.description}</p>
-                  <div className="flex justify-between items-center text-sm text-gray-500 mb-3">
-                    <span>📍 {listing.location}</span>
-                    <span>⭐ {listing.experience || '1+'} years</span>
-                  </div>
-                  <div className="mt-3 pt-3 border-t">
-                    <p className="font-semibold text-gray-800 mb-2">{listing.price_range || 'Price on request'}</p>
-                    <ContactButton 
-                      listingId={listing.id} 
-                      listingName={listing.business_name || listing.full_name} 
-                    />
-                  </div>
-                </div>
-
-                {/* Modal */}
-                <div
-                  id={`contact-modal-${listing.id}`}
-                  style={{ display: 'none' }}
-                  className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
-                  onClick={(e) => {
-                    if (e.target === e.currentTarget) {
-                      const modal = document.getElementById(`contact-modal-${listing.id}`)
-                      if (modal) modal.style.display = 'none'
-                    }
-                  }}
-                >
-                  <div className="bg-white rounded-lg max-w-md w-full max-h-[90vh] overflow-y-auto">
-                    <div className="sticky top-0 bg-white p-3 border-b flex justify-end">
-                      <button
-                        onClick={() => {
-                          const modal = document.getElementById(`contact-modal-${listing.id}`)
-                          if (modal) modal.style.display = 'none'
-                        }}
-                        className="text-gray-500 hover:text-gray-700 text-2xl leading-none"
-                      >
-                        ×
-                      </button>
-                    </div>
-                    <div className="p-6">
-                      <ContactModal
-                        listingId={listing.id}
-                        listingName={listing.business_name || listing.full_name}
-                        onClose={() => {
-                          const modal = document.getElementById(`contact-modal-${listing.id}`)
-                          if (modal) modal.style.display = 'none'
-                        }}
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
+              <FreelancerCard key={listing.id} freelancer={listing} />
             ))}
           </div>
         ) : (
@@ -158,15 +99,6 @@ export default async function Home() {
           </p>
         </div>
       </footer>
-
-      <style>{`
-        .line-clamp-3 {
-          display: -webkit-box;
-          -webkit-line-clamp: 3;
-          -webkit-box-orient: vertical;
-          overflow: hidden;
-        }
-      `}</style>
     </main>
   )
 }

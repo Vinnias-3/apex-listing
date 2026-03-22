@@ -51,12 +51,15 @@ export default function ContactModal({ listingId, listingName, onClose }: Contac
         <p className="text-gray-700 mb-4">
           We will process your request within <strong>5 hours</strong> and connect you with {listingName}.
         </p>
-        <p className="text-gray-600 text-sm">
-          Check your email and phone for updates. Thank you for choosing APEX Listing Company.
+        <p className="text-gray-600 text-sm mb-4">
+          Check your email and phone for updates.
+        </p>
+        <p className="text-gray-500 text-xs">
+          Thank you for choosing APEX Listing Company.
         </p>
         <button
           onClick={onClose}
-          className="mt-6 bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700"
+          className="mt-6 bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 transition"
         >
           Close
         </button>
@@ -68,45 +71,57 @@ export default function ContactModal({ listingId, listingName, onClose }: Contac
     <form onSubmit={handleSubmit} className="space-y-4">
       <h2 className="text-xl font-bold mb-4">Contact {listingName}</h2>
       
-      <input
-        type="text"
-        placeholder="Your Full Name *"
-        value={formData.visitor_name}
-        onChange={(e) => setFormData({...formData, visitor_name: e.target.value})}
-        className="w-full p-3 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-        required
-      />
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">Your Full Name *</label>
+        <input
+          type="text"
+          placeholder="Enter your full name"
+          value={formData.visitor_name}
+          onChange={(e) => setFormData({...formData, visitor_name: e.target.value})}
+          className="w-full p-3 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+          required
+        />
+      </div>
       
-      <input
-        type="tel"
-        placeholder="Your Phone Number *"
-        value={formData.visitor_phone}
-        onChange={(e) => setFormData({...formData, visitor_phone: e.target.value})}
-        className="w-full p-3 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-        required
-      />
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">Your Phone Number *</label>
+        <input
+          type="tel"
+          placeholder="07XX XXX XXX"
+          value={formData.visitor_phone}
+          onChange={(e) => setFormData({...formData, visitor_phone: e.target.value})}
+          className="w-full p-3 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+          required
+        />
+      </div>
       
-      <input
-        type="email"
-        placeholder="Your Email (Optional)"
-        value={formData.visitor_email}
-        onChange={(e) => setFormData({...formData, visitor_email: e.target.value})}
-        className="w-full p-3 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-      />
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">Your Email (Optional)</label>
+        <input
+          type="email"
+          placeholder="you@example.com"
+          value={formData.visitor_email}
+          onChange={(e) => setFormData({...formData, visitor_email: e.target.value})}
+          className="w-full p-3 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+      </div>
       
-      <textarea
-        placeholder="Describe the service you need *"
-        value={formData.message}
-        onChange={(e) => setFormData({...formData, message: e.target.value})}
-        className="w-full p-3 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-        rows={4}
-        required
-      />
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">Message *</label>
+        <textarea
+          placeholder="Describe the service you need. Be specific about what you're looking for."
+          value={formData.message}
+          onChange={(e) => setFormData({...formData, message: e.target.value})}
+          className="w-full p-3 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+          rows={4}
+          required
+        />
+      </div>
       
       <button
         type="submit"
         disabled={submitting}
-        className="w-full bg-blue-600 text-white py-3 rounded font-semibold hover:bg-blue-700 disabled:opacity-50"
+        className="w-full bg-blue-600 text-white py-3 rounded font-semibold hover:bg-blue-700 disabled:opacity-50 transition"
       >
         {submitting ? 'Sending...' : 'Send Request'}
       </button>
