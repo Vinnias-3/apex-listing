@@ -1,5 +1,7 @@
 import { supabase } from '../lib/supabase'
 import HeroSection from '../components/HeroSection'
+import ContactButton from '../components/ContactButton'
+import ContactModal from '../components/ContactModal'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -63,7 +65,7 @@ export default async function Home() {
       {/* Hero + Search Section */}
       <HeroSection categories={categories} />
 
-      {/* Freelancers Grid - Simple version without Contact Button yet */}
+      {/* Freelancers Grid */}
       <section className="container mx-auto px-4 py-12">
         <h2 className="text-2xl font-bold mb-6">Featured Freelancers</h2>
         
@@ -89,10 +91,47 @@ export default async function Home() {
                   </div>
                   <div className="mt-3 pt-3 border-t">
                     <p className="font-semibold text-gray-800 mb-2">{listing.price_range || 'Price on request'}</p>
-                    {/* Contact button will go here later */}
-                    <button className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition">
-                      Contact {listing.business_name || listing.full_name}
-                    </button>
+                    <ContactButton 
+                      listingId={listing.id} 
+                      listingName={listing.business_name || listing.full_name} 
+                    />
+                  </div>
+                </div>
+
+                {/* Modal */}
+                <div
+                  id={`contact-modal-${listing.id}`}
+                  style={{ display: 'none' }}
+                  className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+                  onClick={(e) => {
+                    if (e.target === e.currentTarget) {
+                      const modal = document.getElementById(`contact-modal-${listing.id}`)
+                      if (modal) modal.style.display = 'none'
+                    }
+                  }}
+                >
+                  <div className="bg-white rounded-lg max-w-md w-full max-h-[90vh] overflow-y-auto">
+                    <div className="sticky top-0 bg-white p-3 border-b flex justify-end">
+                      <button
+                        onClick={() => {
+                          const modal = document.getElementById(`contact-modal-${listing.id}`)
+                          if (modal) modal.style.display = 'none'
+                        }}
+                        className="text-gray-500 hover:text-gray-700 text-2xl leading-none"
+                      >
+                        ×
+                      </button>
+                    </div>
+                    <div className="p-6">
+                      <ContactModal
+                        listingId={listing.id}
+                        listingName={listing.business_name || listing.full_name}
+                        onClose={() => {
+                          const modal = document.getElementById(`contact-modal-${listing.id}`)
+                          if (modal) modal.style.display = 'none'
+                        }}
+                      />
+                    </div>
                   </div>
                 </div>
               </div>

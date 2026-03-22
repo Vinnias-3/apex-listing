@@ -38,27 +38,21 @@ export default function ContactModal({ listingId, listingName, onClose }: Contac
 
     if (!error) {
       setSubmitted(true)
-      setFormData({
-        visitor_name: '',
-        visitor_phone: '',
-        visitor_email: '',
-        message: ''
-      })
     }
     setSubmitting(false)
   }
 
   if (submitted) {
     return (
-      <div className="text-center p-6">
+      <div className="text-center p-4">
         <div className="bg-green-100 border border-green-300 text-green-800 p-4 rounded-lg mb-4">
           ✓ Your request has been successfully sent!
         </div>
         <p className="text-gray-700 mb-4">
-          We will process your request within <strong>5 hours</strong> and connect you with the freelancer.
+          We will process your request within <strong>5 hours</strong> and connect you with {listingName}.
         </p>
         <p className="text-gray-600 text-sm">
-          Check your email for updates. Thank you for choosing APEX Listing Company.
+          Check your email and phone for updates. Thank you for choosing APEX Listing Company.
         </p>
         <button
           onClick={onClose}
@@ -79,7 +73,7 @@ export default function ContactModal({ listingId, listingName, onClose }: Contac
         placeholder="Your Full Name *"
         value={formData.visitor_name}
         onChange={(e) => setFormData({...formData, visitor_name: e.target.value})}
-        className="w-full p-3 border rounded"
+        className="w-full p-3 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
         required
       />
       
@@ -88,7 +82,7 @@ export default function ContactModal({ listingId, listingName, onClose }: Contac
         placeholder="Your Phone Number *"
         value={formData.visitor_phone}
         onChange={(e) => setFormData({...formData, visitor_phone: e.target.value})}
-        className="w-full p-3 border rounded"
+        className="w-full p-3 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
         required
       />
       
@@ -97,14 +91,14 @@ export default function ContactModal({ listingId, listingName, onClose }: Contac
         placeholder="Your Email (Optional)"
         value={formData.visitor_email}
         onChange={(e) => setFormData({...formData, visitor_email: e.target.value})}
-        className="w-full p-3 border rounded"
+        className="w-full p-3 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
       />
       
       <textarea
         placeholder="Describe the service you need *"
         value={formData.message}
         onChange={(e) => setFormData({...formData, message: e.target.value})}
-        className="w-full p-3 border rounded"
+        className="w-full p-3 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
         rows={4}
         required
       />
