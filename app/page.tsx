@@ -7,12 +7,14 @@ export const dynamic = 'force-dynamic'
 export const revalidate = 0
 
 export default async function Home() {
-  const { data: listings } = await supabase
+  // Fetch active freelancers
+  const { data: listings, error } = await supabase
     .from('listings')
     .select('*')
     .eq('status', 'active')
     .order('created_at', { ascending: false })
 
+  // Fetch notifications
   const { data: notifications } = await supabase
     .from('notifications')
     .select('*')
@@ -21,9 +23,18 @@ export default async function Home() {
     .limit(5)
 
   const categories = [
-    'Graphic Design', 'Web Development', 'Plumbing', 'Photography',
-    'Writing', 'Cleaning', 'Electrician', 'Catering', 'Digital Marketing',
-    'Video Editing', 'Translation', 'Event Planning'
+    'Graphic Design',
+    'Web Development',
+    'Plumbing',
+    'Photography',
+    'Writing',
+    'Cleaning',
+    'Electrician',
+    'Catering',
+    'Digital Marketing',
+    'Video Editing',
+    'Translation',
+    'Event Planning'
   ]
 
   return (
@@ -31,47 +42,54 @@ export default async function Home() {
       {/* Header */}
       <header className="bg-white shadow-sm">
         <div className="container mx-auto px-4 py-6">
-          <div className="flex justify-between items-center">
+          <div className="flex justify-between items-center flex-wrap gap-3">
             <div>
-              <h1 className="text-3xl font-bold text-blue-600">APEX Listing Company</h1>
-              <p className="text-gray-600 mt-1">Find trusted freelancers and businesses in Kenya</p>
+              <h1 className="text-2xl md:text-3xl font-bold text-blue-600">APEX Listing Company</h1>
+              <p className="text-gray-600 text-sm md:text-base mt-1">Find trusted freelancers and businesses in Kenya</p>
             </div>
             <div className="flex gap-3">
-              <a href="/freelancer/login" className="text-sm text-gray-500 hover:text-blue-600">Freelancer Login</a>
+              <a href="/freelancer/login" className="text-sm text-gray-500 hover:text-blue-600">Login</a>
               <a href="/freelancer/register" className="text-sm bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700">Register</a>
             </div>
           </div>
         </div>
       </header>
 
-      {/* Notification Area */}
+      {/* Notification Bar */}
       {notifications && notifications.length > 0 && (
         <div className="bg-yellow-50 border-b border-yellow-200">
           <div className="container mx-auto px-4 py-2">
-            <div className="flex gap-2 overflow-x-auto">
+            <div className="flex gap-3 overflow-x-auto">
               <span className="text-yellow-700 font-bold text-sm flex-shrink-0">📢 NOTICE:</span>
-              {notifications.map((n) => (
-                <div key={n.id} className="text-sm text-gray-700">
-                  {n.content}
-                </div>
-              ))}
+              <div className="flex gap-4">
+                {notifications.map((n) => (
+                  <div key={n.id} className="text-sm text-gray-700 whitespace-nowrap">
+                    {n.content}
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </div>
       )}
 
-      {/* Hero Section */}
+      {/* Hero + Search Section */}
       <HeroSection categories={categories} />
 
-      {/* Listings */}
+      {/* Freelancers Grid */}
       <section className="container mx-auto px-4 py-12">
         <h2 className="text-2xl font-bold mb-6">Featured Freelancers</h2>
-        {listings && listings.length > 0 ? (
+        
+        {error ? (
+          <div className="text-center py-12 text-red-500">
+            <p>Error loading freelancers. Please try again later.</p>
+          </div>
+        ) : listings && listings.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {listings.map((listing) => (
               <div
                 key={listing.id}
-                className="freelancer-card bg-white rounded-lg shadow overflow-hidden hover:shadow-lg transition"
+                className="freelancer-card bg-white rounded-lg shadow hover:shadow-lg transition-all duration-300"
                 data-category={listing.category}
               >
                 <div className="p-5">
@@ -84,15 +102,18 @@ export default async function Home() {
                   </div>
                   <div className="mt-3 pt-3 border-t">
                     <p className="font-semibold text-gray-800 mb-2">{listing.price_range || 'Price on request'}</p>
-                    <ContactButton listingId={listing.id} listingName={listing.business_name || listing.full_name} />
+                    <ContactButton 
+                      listingId={listing.id} 
+                      listingName={listing.business_name || listing.full_name} 
+                    />
                   </div>
                 </div>
 
-                {/* Modal */}
+                {/* Modal for Contact Form */}
                 <div
                   id={`contact-modal-${listing.id}`}
                   style={{ display: 'none' }}
-                  className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+                  className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
                   onClick={(e) => {
                     if (e.target === e.currentTarget) {
                       const modal = document.getElementById(`contact-modal-${listing.id}`)
@@ -100,33 +121,38 @@ export default async function Home() {
                     }
                   }}
                 >
-                  <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 max-h-[90vh] overflow-y-auto">
-                    <div className="flex justify-between items-center mb-4">
+                  <div className="bg-white rounded-lg max-w-md w-full max-h-[90vh] overflow-y-auto">
+                    <div className="sticky top-0 bg-white p-3 border-b flex justify-end">
                       <button
                         onClick={() => {
                           const modal = document.getElementById(`contact-modal-${listing.id}`)
                           if (modal) modal.style.display = 'none'
                         }}
-                        className="text-gray-500 hover:text-gray-700 text-2xl"
+                        className="text-gray-500 hover:text-gray-700 text-2xl leading-none"
                       >
                         ×
                       </button>
                     </div>
-                    <ContactModal
-                      listingId={listing.id}
-                      listingName={listing.business_name || listing.full_name}
-                      onClose={() => {
-                        const modal = document.getElementById(`contact-modal-${listing.id}`)
-                        if (modal) modal.style.display = 'none'
-                      }}
-                    />
+                    <div className="p-6">
+                      <ContactModal
+                        listingId={listing.id}
+                        listingName={listing.business_name || listing.full_name}
+                        onClose={() => {
+                          const modal = document.getElementById(`contact-modal-${listing.id}`)
+                          if (modal) modal.style.display = 'none'
+                        }}
+                      />
+                    </div>
                   </div>
                 </div>
               </div>
             ))}
           </div>
         ) : (
-          <p className="text-gray-500 text-center py-12">No freelancers listed yet. Check back soon!</p>
+          <div className="text-center py-12">
+            <p className="text-gray-500">No freelancers listed yet. Check back soon!</p>
+            <p className="text-sm text-gray-400 mt-2">Are you a freelancer? Register now to get started.</p>
+          </div>
         )}
       </section>
 
@@ -137,6 +163,9 @@ export default async function Home() {
           <p className="text-sm text-gray-400 mt-2">© 2025 All Rights Reserved</p>
           <p className="text-sm text-gray-400 mt-2">
             Contact: 0748702891 | hardinhiggins60@gmail.com
+          </p>
+          <p className="text-xs text-gray-500 mt-4">
+            Freelancers pay 500 KES registration fee. Listing active for 4 months. 8% commission on jobs.
           </p>
         </div>
       </footer>
