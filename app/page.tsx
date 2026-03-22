@@ -2,19 +2,30 @@ import { supabase } from '../lib/supabase'
 import HeroSection from '../components/HeroSection'
 import ContactButton from '../components/ContactButton'
 
+// Force dynamic rendering to always fetch fresh data
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
 export default async function Home() {
-  const { data: listings } = await supabase
+  // Fetch active listings
+  const { data: listings, error } = await supabase
     .from('listings')
     .select('*')
     .eq('status', 'active')
     .order('created_at', { ascending: false })
 
+  // Fetch notifications
   const { data: notifications } = await supabase
     .from('notifications')
     .select('*')
     .eq('status', 'active')
     .order('created_at', { ascending: false })
     .limit(5)
+
+  // Debug: Log if no listings
+  if (!listings || listings.length === 0) {
+    console.log('No active listings found in Supabase')
+  }
 
   const categories = [
     'Graphic Design', 'Web Development', 'Plumbing', 'Photography',
@@ -33,9 +44,9 @@ export default async function Home() {
               <p className="text-gray-600 mt-1">Find trusted freelancers and businesses in Kenya</p>
             </div>
             <div className="flex gap-3">
-  <a href="/freelancer/login" className="text-sm text-gray-500 hover:text-blue-600">Freelancer Login</a>
-  <a href="/freelancer/register" className="text-sm bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700">Register</a>
-</div>
+              <a href="/freelancer/login" className="text-sm text-gray-500 hover:text-blue-600">Freelancer Login</a>
+              <a href="/freelancer/register" className="text-sm bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700">Register</a>
+            </div>
           </div>
         </div>
       </header>
@@ -87,7 +98,10 @@ export default async function Home() {
             ))}
           </div>
         ) : (
-          <p className="text-gray-500 text-center py-12">No freelancers listed yet. Check back soon!</p>
+          <div className="text-center py-12">
+            <p className="text-gray-500">No freelancers listed yet. Check back soon!</p>
+            <p className="text-sm text-gray-400 mt-2">If you're a freelancer, register and get approved by admin.</p>
+          </div>
         )}
       </section>
 
