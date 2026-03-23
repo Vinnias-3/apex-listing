@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { supabase } from '../../../lib/supabase'
+import { supabase } from '../../lib/supabase'
+import PaystackButton from '../../components/PaystackButton'
 
 interface Freelancer {
   id: string
@@ -178,31 +179,6 @@ export default function FreelancerDashboard() {
     setSubmitting(false)
   }
 
-  const handleRenew = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setSubmitting(true)
-    setMessage(null)
-
-    const freelancerId = localStorage.getItem('freelancer_id')
-    
-    const { error } = await supabase
-      .from('renewals')
-      .insert([{
-        freelancer_id: freelancerId,
-        freelancer_name: freelancer?.full_name,
-        amount: 500,
-        status: 'pending'
-      }])
-
-    if (!error) {
-      setMessage({ type: 'success', text: 'Renewal request submitted! Send 500 KES to 0748702891. Admin will verify and extend your listing.' })
-      setShowRenewForm(false)
-    } else {
-      setMessage({ type: 'error', text: 'Error submitting renewal: ' + error.message })
-    }
-    setSubmitting(false)
-  }
-
   const handleUpdateProfile = async (e: React.FormEvent) => {
     e.preventDefault()
     setSubmitting(true)
@@ -230,6 +206,30 @@ export default function FreelancerDashboard() {
     setSubmitting(false)
   }
 
+  const handlePaymentSuccess = async (reference: string) => {
+    const freelancerId = localStorage.getItem('freelancer_id')
+    
+    await supabase
+      .from('renewals')
+      .insert([{
+        freelancer_id: freelancerId,
+        freelancer_name: freelancer?.full_name,
+        amount: 500,
+        status: 'pending'
+      }])
+    
+    setMessage({ 
+      type: 'success', 
+      text: `Payment successful! Your renewal request has been submitted. Admin will extend your listing within 24 hours. Transaction ID: ${reference}` 
+    })
+    setShowRenewForm(false)
+  }
+
+  const handlePaymentClose = () => {
+    setMessage({ type: 'error', text: 'Payment was cancelled. You can try again later.' })
+    setShowRenewForm(false)
+  }
+
   const handleLogout = () => {
     localStorage.removeItem('freelancer_id')
     localStorage.removeItem('freelancer_name')
@@ -247,6 +247,10 @@ export default function FreelancerDashboard() {
   const canWithdraw = freelancer.balance >= 1000
   const isExpired = freelancer.expires_at && new Date(freelancer.expires_at) < new Date()
   const daysLeft = freelancer.expires_at ? Math.ceil((new Date(freelancer.expires_at).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)) : 0
+
+  const nameParts = freelancer.full_name.split(' ')
+  const firstName = nameParts[0] || ''
+  const lastName = nameParts.slice(1).join(' ') || ''
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -334,7 +338,7 @@ export default function FreelancerDashboard() {
           )}
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
           <button onClick={() => setShowClaimForm(!showClaimForm)} className="bg-blue-600 text-white p-4 rounded-lg font-semibold hover:bg-blue-700">
             {showClaimForm ? 'Cancel' : '+ Claim Completed Job'}
           </button>
@@ -373,20 +377,29 @@ export default function FreelancerDashboard() {
         {showRenewForm && (
           <div className="bg-white rounded-lg shadow p-6 mb-8">
             <h2 className="text-xl font-bold mb-4">Renew Listing - 500 KES</h2>
-            <form onSubmit={handleRenew} className="space-y-4">
+            <div className="space-y-4">
               <div className="bg-gray-100 p-4 rounded-lg">
-                <p className="font-semibold mb-2">How to pay:</p>
-                <ol className="list-decimal list-inside space-y-1 text-sm">
-                  <li>Go to M-Pesa</li>
-                  <li>Select "Send Money"</li>
-                  <li>Enter Number: <span className="font-bold">0748702891</span></li>
-                  <li>Enter Amount: <span className="font-bold">500</span></li>
-                  <li>Enter your PIN and confirm</li>
-                </ol>
-                <p className="mt-3 text-sm text-gray-600">After payment, click submit. Admin will verify and extend your listing by 4 months.</p>
+                <p className="font-semibold mb-2">Payment Options:</p>
+                <p className="text-sm text-gray-600 mb-3">
+                  Pay 500 KES to renew your listing for another 4 months.
+                </p>
               </div>
-              <button type="submit" disabled={submitting} className="bg-orange-600 text-white px-6 py-2 rounded hover:bg-orange-700 w-full">{submitting ? 'Submitting...' : 'I Have Paid - Submit Renewal Request'}</button>
-            </form>
+              
+              <PaystackButton
+                amount={500}
+                email={freelancer.email}
+                firstName={firstName}
+                lastName={lastName}
+                phone={freelancer.phone}
+                onSuccess={handlePaymentSuccess}
+                onClose={handlePaymentClose}
+                buttonText="Pay 500 KES Now"
+              />
+              
+              <p className="text-xs text-gray-500 text-center">
+                After payment, your renewal request will be processed within 24 hours.
+              </p>
+            </div>
           </div>
         )}
 
@@ -411,7 +424,9 @@ export default function FreelancerDashboard() {
                     <td className="p-3">{new Date(claim.created_at).toLocaleDateString()}</td>
                   </tr>
                 ))}
-                {claims.length === 0 && <tr><td colSpan={4} className="p-6 text-center text-gray-500">No claims yet</td></tr>}
+                {claims.length === 0 && (
+                  <tr><td colSpan={4} className="p-6 text-center text-gray-500">No claims yet</td></tr>
+                )}
               </tbody>
             </table>
           </div>
@@ -436,7 +451,9 @@ export default function FreelancerDashboard() {
                     <td className="p-3">{new Date(w.created_at).toLocaleDateString()}</td>
                   </tr>
                 ))}
-                {withdrawals.length === 0 && <tr><td colSpan={3} className="p-6 text-center text-gray-500">No withdrawals yet</td></tr>}
+                {withdrawals.length === 0 && (
+                  <tr><td colSpan={3} className="p-6 text-center text-gray-500">No withdrawals yet</td></tr>
+                )}
               </tbody>
             </table>
           </div>
