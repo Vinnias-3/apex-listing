@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { supabase } from '../../lib/supabase'
-import PaystackButton from '../../components/PaystackButton'
+import { supabase } from '@/lib/supabase'
+import PaystackButton from '@/components/PaystackButton'
 
 interface Freelancer {
   id: string

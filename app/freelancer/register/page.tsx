@@ -2,8 +2,8 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { supabase } from '../../../lib/supabase'
-import PaystackButton from '../../../components/PaystackButton'
+import { supabase } from '@/lib/supabase'
+import PaystackButton from '@/components/PaystackButton'
 
 export default function Register() {
   const router = useRouter()
